@@ -66,9 +66,9 @@ impl CubeSet {
 }
 
 fn main() {
-    let mut labyrinth = Lab::new(10);
+    let mut labyrinth = Lab::new(20);
 
     lab::fill_labyrinth(&mut labyrinth);
     lab::print_labyrinth(&labyrinth);
-    
+
 }

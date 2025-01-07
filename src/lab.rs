@@ -1,6 +1,8 @@
 use rand::Rng;
 use std::collections::HashSet;
+use std::collections::VecDeque;
 
+#[derive(Clone)]
 pub struct LabTile {
     walls: [bool; 4],
     neighbors: Vec<Option<LabTile>>
@@ -15,6 +17,7 @@ impl LabTile {
     }
 }
 
+#[derive(Clone)]
 pub struct Lab {
     tiles: Vec<LabTile>
 }
@@ -102,6 +105,107 @@ pub fn fill_labyrinth(lab: &mut Lab) {
     // Create an exit (remove bottom wall of a random cell in the last row)
     let exit_cell = (size - 1) * size + rng.gen_range(0..size);
     lab.tiles[exit_cell].walls[2] = false; // Remove bottom wall
+
+    // Add extra walls while ensuring the entrance and exit remain connected
+    let mut attempts = 0;
+    while attempts < size * size {
+        let cell = rng.gen_range(0..lab.tiles.len());
+        let wall_idx = rng.gen_range(0..4);
+
+        // Check if adding this wall would block the path between entrance and exit
+        let mut lab_copy = lab.clone();
+        lab_copy.tiles[cell].walls[wall_idx] = true;
+
+        // Calculate the opposite cell and wall
+        let opposite_cell = match wall_idx {
+            0 => {
+                if cell >= size {
+                    cell - size // Top -> Bottom
+                } else {
+                    continue; // Skip if the cell is in the first row
+                }
+            }
+            1 => {
+                if cell % size < size - 1 {
+                    cell + 1 // Right -> Left
+                } else {
+                    continue; // Skip if the cell is in the last column
+                }
+            }
+            2 => {
+                if cell < size * (size - 1) {
+                    cell + size // Bottom -> Top
+                } else {
+                    continue; // Skip if the cell is in the last row
+                }
+            }
+            3 => {
+                if cell % size > 0 {
+                    cell - 1 // Left -> Right
+                } else {
+                    continue; // Skip if the cell is in the first column
+                }
+            }
+            _ => panic!("Invalid wall index"),
+        };
+
+        if opposite_cell < lab_copy.tiles.len() {
+            let opposite_wall = match wall_idx {
+                0 => 2, // Top -> Bottom
+                1 => 3, // Right -> Left
+                2 => 0, // Bottom -> Top
+                3 => 1, // Left -> Right
+                _ => panic!("Invalid wall index"),
+            };
+            lab_copy.tiles[opposite_cell].walls[opposite_wall] = true;
+        }
+
+        // Check if the entrance and exit are still connected
+        if is_connected(&lab_copy, entrance_cell, exit_cell) {
+            lab.tiles[cell].walls[wall_idx] = true;
+        }
+
+        attempts += 1;
+    }
+}
+
+// Helper function to check if two cells are connected using BFS
+fn is_connected(lab: &Lab, start: usize, end: usize) -> bool {
+    let size = (lab.tiles.len() as f32).sqrt() as usize;
+    let mut visited = HashSet::new();
+    let mut queue = VecDeque::new();
+
+    queue.push_back(start);
+    visited.insert(start);
+
+    while !queue.is_empty() {
+        let cell = queue.pop_front().unwrap();
+        if cell == end {
+            return true;
+        }
+
+        let (x, y) = (cell % size, cell / size);
+
+        // Check neighbors
+        if x > 0 && !lab.tiles[cell].walls[3] && !visited.contains(&(cell - 1)) {
+            queue.push_back(cell - 1);
+            visited.insert(cell - 1);
+        }
+        if x < size - 1 && !lab.tiles[cell].walls[1] && !visited.contains(&(cell + 1)) {
+            queue.push_back(cell + 1);
+            visited.insert(cell + 1);
+        }
+        if y > 0 && !lab.tiles[cell].walls[0] && !visited.contains(&(cell - size)) {
+            queue.push_back(cell - size);
+            visited.insert(cell - size);
+        }
+        if y < size - 1 && !lab.tiles[cell].walls[2] && !visited.contains(&(cell + size)) {
+            queue.push_back(cell + size);
+            visited.insert(cell + size);
+        }
+    }
+
+    false
 }
 
 pub fn print_labyrinth(lab: &Lab) {
