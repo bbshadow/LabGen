@@ -5,10 +5,9 @@ extern crate rand; // Add this to your Cargo.toml dependencies
 mod lab;
 
 
-use lab::{Lab, LabTile};
-use na::{Vector3, UnitQuaternion, Translation, U3};
+use lab::Lab;
+use na::U3;
 use kiss3d::window::Window;
-use kiss3d::light::Light;
 use rand::Rng; // Import the random number generator trait
 
 struct Cube {
