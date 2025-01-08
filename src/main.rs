@@ -17,7 +17,7 @@ fn main() {
     generate_main_path(&mut labyrinth, entrance, exit);
 
     // Generate dead-end paths
-    generate_dead_end_paths(&mut labyrinth, entrance, exit);
+    generate_dead_end_paths(&mut labyrinth);
 
     // Render the labyrinth in 3D
     render_labyrinth_3d(&labyrinth);
