@@ -7,6 +7,15 @@ pub struct LabTile {
     walls: [bool; 4], // [top, right, bottom, left]
 }
 
+impl LabTile {
+    pub fn get_wall(&self, direction: usize) -> bool {
+        self.walls[direction]
+    }
+    pub fn set_wall(&mut self, direction: usize, value: bool) {
+        self.walls[direction] = value;
+    }
+}
+
 #[derive(Clone)]
 pub struct Lab {
     pub tiles: Vec<LabTile>,
@@ -92,13 +101,13 @@ pub fn generate_main_path(lab: &mut Lab, entrance: usize, exit: usize) {
         visited.insert(current);
 
         // Clear the terminal and print the current state of the labyrinth
-        clear_terminal();
-        print_labyrinth_with_path(&lab, &visited, entrance, exit, Some((current, 34)), None); // Use blue for the main path
+        // clear_terminal();
+        // print_labyrinth_with_path(&lab, &visited, entrance, exit, Some((current, 34)), None); // Use blue for the main path
         std::thread::sleep(std::time::Duration::from_millis(30)); // Add a small delay for visualization
     }
 }
 
-pub fn generate_dead_end_paths(lab: &mut Lab, entrance: usize, exit: usize) {
+pub fn generate_dead_end_paths(lab: &mut Lab) {
     let mut rng = rand::thread_rng();
     let mut visited = HashSet::new();
 
@@ -163,8 +172,8 @@ pub fn generate_dead_end_paths(lab: &mut Lab, entrance: usize, exit: usize) {
             visited.insert(current);
 
             // Clear the terminal and print the current state of the labyrinth
-            clear_terminal();
-            print_labyrinth_with_path(&lab, &visited, entrance, exit, Some((current, 33)), None); // Use yellow for dead-end paths
+            // clear_terminal();
+            // print_labyrinth_with_path(&lab, &visited, entrance, exit, Some((current, 33)), None); // Use yellow for dead-end paths
             std::thread::sleep(std::time::Duration::from_millis(30)); // Add a small delay for visualization
         }
     }
